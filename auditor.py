@@ -123,20 +123,20 @@ if __name__ == '__main__':
         packs = get_packs_from_moments(moments)
         packs = merge_packs(packs)
         resolve_packs(packs)
-        output_moment_transactions(moments, path='tmp/momentWithPacks.csv')
+        output_moment_transactions(moments, path='test/momentWithPacks.csv')
 
     if method < 2:
-        moments = load_from_transactions(path='tmp/momentWithPacks.csv')
+        moments = load_from_transactions(path='test/momentWithPacks.csv')
         handle_rentals(moments)
-        output_moment_transactions(moments, path='tmp/momentWithRentals.csv')
+        output_moment_transactions(moments, path='test/momentWithRentals.csv')
 
     if method < 3:
-        moments = load_from_transactions(path='tmp/momentWithRentals.csv')
+        moments = load_from_transactions(path='test/momentWithRentals.csv')
         users_to_trades = get_trades_from_moments(moments)
         merge_trades(users_to_trades)
         resolve_trades(users_to_trades)
-        output_moment_transactions(moments, path='tmp/momentWithTrades.csv')
+        output_moment_transactions(moments, path='test/momentWithTrades.csv')
 
     if method < 4:
-        moments = load_from_transactions(path='tmp/momentWithTrades.csv')
-        output_moment(moments, path='tmp/finalResult.csv')
+        moments = load_from_transactions(path='test/momentWithTrades.csv')
+        output_moment(moments, path='test/finalResult.csv')
