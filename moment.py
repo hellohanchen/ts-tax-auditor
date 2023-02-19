@@ -36,6 +36,7 @@ def handle_rentals(moments):
         moment = moments[identifier]
 
         i = 0
+        total_tx = len(moment.transactions)
         while i < len(moment.transactions) - 1:
             transaction = moment.transactions[i]
             next_transaction = moment.transactions[i + 1]
@@ -45,46 +46,42 @@ def handle_rentals(moments):
                     transaction.tx_type == 'Received Gift' and next_transaction.tx_type == 'Sent Gift' and \
                     transaction.price is None and next_transaction.price is None:
                 print(f"==== CLEAN {Color.RED}IN{Color.ENDC} RENTAL ====")
-                print(f"Moment id: {identifier}\nMoment: {Color.BOLD}{moment.moment}{Color.ENDC}")
+                print(f"Moment id: {identifier}, total transactions: {Color.RED}{total_tx}{Color.ENDC}\n"
+                      f"Moment: {Color.BOLD}{moment.moment}{Color.ENDC}, ")
                 print(f"Received from {Color.BLUE}{transaction.counter_party}{Color.ENDC}"
                       f" on {Color.GREEN}{transaction.date}{Color.ENDC}")
                 print(f"Sent back on {Color.GREEN}{next_transaction.date}{Color.ENDC}")
 
                 processed = False
                 while not processed:
-                    response = input(f"Remove these 2 transactions? ({Color.RED}yes{Color.ENDC}/no)\n")
-                    if response.lower() == 'no':
-                        response = input(f"Just leave these 2 transactions? ({Color.RED}yes{Color.ENDC}/no)\n")
-                        if response.lower() == 'no':
-                            payment = input("Did you pay cash in this rental, if so, "
-                                            f"how much? ({Color.RED}0{Color.ENDC})\n")
-                            if payment == '':
-                                payment = '0'
-                            try:
-                                transaction.price = float(payment)
-                                next_transaction.price = 0.0
-                                processed = True
-                                print("==== UPDATED ====\n")
-                            except:
-                                print("Error parsing number.")
-                        elif response.lower() == 'yes' or response == '':
-                            print("==== SKIPPED ====\n")
+                    is_rental = input(f"Are these 2 transactions from a rental? ({Color.RED}yes{Color.ENDC}/no)\n")
+                    if is_rental.lower() == 'no':
+                        should_remove = input(f"Remove these 2 transactions? ({Color.RED}yes{Color.ENDC}/no)\n")
+                        if should_remove.lower() == 'yes' or should_remove == '':
                             processed = True
-                        else:
-                            print("==== RETRY ====\n")
-
-                    elif response.lower() == 'yes' or response == '':
-                        processed = True
-                        if i == 1 and len(moment.transactions) == 2:
                             transaction.price = 0.0
                             next_transaction.price = 0.0
                             print("==== MARKED as 0 ====\n")
+                        elif should_remove.lower() == 'no':
+                            processed = True
+                            print("==== SKIPPED ====\n")
                         else:
-                            moment.transactions.remove(transaction)
-                            moment.transactions.remove(next_transaction)
-                            print("==== REMOVED ====\n")
-                            i = i - 1
+                            print("==== RETRY ====\n")
 
+                    elif is_rental.lower() == 'yes' or is_rental == '':
+                        rental_fee = input(
+                            f"How much {Color.BOLD}cash{Color.ENDC} did you pay? ({Color.RED}0{Color.ENDC})\n")
+                        if rental_fee == '':
+                            rental_fee = '0'
+                        try:
+                            transaction.price = float(rental_fee)
+                            transaction.tx_type = 'Rented In'
+                            next_transaction.price = 0.0
+                            next_transaction.tx_type = 'Returned Back'
+                            processed = True
+                            print("==== UPDATED ====\n")
+                        except:
+                            print("Error parsing number.")
                     else:
                         print("==== RETRY ====\n")
 
@@ -92,41 +89,42 @@ def handle_rentals(moments):
                     transaction.tx_type == 'Sent Gift' and next_transaction.tx_type == 'Received Gift' and \
                     transaction.price is None and next_transaction.price is None:
                 print(f"==== CLEAN {Color.RED}OUT{Color.ENDC} RENTAL ====")
-                print("Moment id: {}".format(identifier))
-                print(f"Moment: {Color.BOLD}{moment.moment}{Color.ENDC}")
+                print(f"Moment id: {identifier}, total transactions: {Color.RED}{total_tx}{Color.ENDC}\n"
+                      f"Moment: {Color.BOLD}{moment.moment}{Color.ENDC}, ")
                 print(f"Sent to {Color.BLUE}{transaction.counter_party}{Color.ENDC}"
                       f" on {Color.GREEN}{transaction.date}{Color.ENDC}")
                 print(f"Received back on {Color.GREEN}{next_transaction.date}{Color.ENDC}")
 
                 processed = False
                 while not processed:
-                    response = input(f"Remove these 2 transactions? ({Color.RED}yes{Color.ENDC}/no)\n")
-                    if response.lower() == 'no':
-                        response = input(f"Just leave these 2 transactions? ({Color.RED}yes{Color.ENDC}/no)\n")
-                        if response.lower() == 'no':
-                            payment = input("Did you earn cash in this rental, if so, "
-                                            f"how much? ({Color.RED}0{Color.ENDC})\n")
-                            if payment == '':
-                                payment = '0'
-                            try:
-                                transaction.price = float(payment)
-                                next_transaction.price = 0.0
-                                processed = True
-                                print("==== UPDATED ====\n")
-                            except:
-                                print("Error parsing number.")
-                        elif response.lower() == 'yes' or response == '':
+                    is_rental = input(f"Are these 2 transactions from a rental? ({Color.RED}yes{Color.ENDC}/no)\n")
+                    if is_rental.lower() == 'no':
+                        should_remove = input(f"Remove these 2 transactions? ({Color.RED}yes{Color.ENDC}/no)\n")
+                        if should_remove.lower() == 'yes' or should_remove == '':
+                            processed = True
+                            moment.transactions.remove(transaction)
+                            moment.transactions.remove(next_transaction)
+                            print("==== REMOVED ====\n")
+                            i = i - 1
+                        elif should_remove.lower() == 'no':
                             processed = True
                             print("==== SKIPPED ====\n")
                         else:
                             print("==== RETRY ====\n")
 
-                    elif response.lower() == 'yes' or response == '':
-                        processed = True
-                        moment.transactions.remove(transaction)
-                        moment.transactions.remove(next_transaction)
-                        print("==== REMOVED ====\n")
-                        i = i - 1
-
+                    elif is_rental.lower() == 'yes' or is_rental == '':
+                        rental_fee = input(
+                            f"How much {Color.BOLD}cash{Color.ENDC} did you earn? ({Color.RED}0{Color.ENDC})\n")
+                        if rental_fee == '':
+                            rental_fee = '0'
+                        try:
+                            transaction.price = float(rental_fee)
+                            transaction.tx_type = 'Rented Out'
+                            next_transaction.price = 0.0
+                            next_transaction.tx_type = 'Received Back'
+                            processed = True
+                            print("==== UPDATED ====\n")
+                        except:
+                            print("Error parsing number.")
                     else:
                         print("==== RETRY ====\n")
