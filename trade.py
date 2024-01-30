@@ -168,7 +168,7 @@ def resolve_trades(users_to_trades, moments, output_func):
     for user in users_to_trades:
         trades = users_to_trades[user]
 
-        print(f"({Color.RED}User #{resolved}/{len(users_to_trades)}{Color.ENDC})")
+        print(f"({Color.RED}User #{resolved + 1}/{len(users_to_trades)}{Color.ENDC})")
         for date in trades:
             trade = trades[date]
             print("==== ASSIGN TRADE VALUE ====")
@@ -211,6 +211,11 @@ def resolve_trades(users_to_trades, moments, output_func):
                         print(f"{Color.CYAN}---- Mark all as $0.00{Color.ENDC}")
                         break
 
+                    if len(trade.in_transactions) == 1:
+                        trade.assign_average_price_to_in_transactions()  # assign value to the only 1 moment
+                        print(f"{Color.CYAN}---- Assigned 1 moment as ${str(round(total_value, 2))}{Color.ENDC}")
+                        break
+
                     method = input("---- Now you need to assign prices for received moments, choose from 1/2 \n"
                                    f"{Color.YELLOW}1: Assigned ${str(round(total_value, 2))} equally{Color.ENDC}\n"
                                    f"{Color.YELLOW}2: Assigned individually{Color.ENDC}\n")
@@ -243,7 +248,7 @@ def resolve_trades(users_to_trades, moments, output_func):
                                     print("Error parsing number: " + value)
 
                             if assigned < len(trade.in_transactions):
-                                if total_value > 0.0:
+                                if total_value > 0.0 and len(trade.in_transactions) - assigned > 1:
                                     response = input(f"For the rest {len(trade.in_transactions) - assigned} moments, "
                                                      f"assigned ${str(round(total_value, 2))} equally? "
                                                      f"({Color.RED}no{Color.ENDC}/yes)\n")
@@ -251,9 +256,15 @@ def resolve_trades(users_to_trades, moments, output_func):
                                         trade.assign_average_price_to_in_transactions()
                                         break
                                 else:
-                                    # if value left = 0.0
-                                    trade.assign_average_price_to_in_transactions()
-                                    print(f"{Color.CYAN}---- Mark all others as $0.00{Color.ENDC}")
+                                    if len(trade.in_transactions) - assigned == 1:
+                                        # assign value to the only 1 moment
+                                        trade.assign_average_price_to_in_transactions()
+                                        print(f"{Color.CYAN}---- Assigned 1 moment as ${str(round(total_value, 2))}{Color.ENDC}")
+                                    else:
+                                        # if value left = 0.0
+                                        trade.assign_average_price_to_in_transactions()
+                                        print(f"{Color.CYAN}---- Mark all others as $0.00{Color.ENDC}")
+
                         processed = True
                     else:
                         print("Invalid input: " + method)

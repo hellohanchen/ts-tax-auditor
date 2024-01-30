@@ -6,7 +6,8 @@ class Moment:
         self.moment_id = moment_id
         self.moment = moment
         hash_pos = moment.find('#')
-        self.serial = moment[hash_pos + 1:]
+        end_pos = moment.find(' ', hash_pos + 1)
+        self.serial = moment[hash_pos + 1:end_pos]
         self.transactions = []
 
     def add_tx(self, transaction):

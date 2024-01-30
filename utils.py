@@ -13,6 +13,9 @@ class Color:
 def parse_serial_number(moment_detail):
     hash_pos = moment_detail.find('#')
     end_pos = moment_detail.find(' ', hash_pos + 1)
+    if end_pos == -1:
+        return moment_detail[hash_pos + 1:]
+
     return moment_detail[hash_pos + 1:end_pos]
 
 
@@ -27,6 +30,12 @@ def parse_counterparty_username(livetoken_counter_party):
 
 
 def reformat_moment_detail(livetoken_moment_detail):
+    parts = livetoken_moment_detail.split('|')
+    if len(parts) == 7:
+        return ' | '.join([parts[5], parts[4], parts[0], parts[6], parts[3]])
+    if len(parts) == 8:
+        return ' | '.join([parts[6], f'{parts[4]} ({parts[5]})', parts[0], parts[7], parts[3]])
+
     delimiter = '|'
     pos1 = livetoken_moment_detail.find(delimiter)
     pos2 = livetoken_moment_detail.find(delimiter, pos1 + 1)

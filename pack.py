@@ -39,7 +39,7 @@ def get_packs_from_moments(moments):
             if transaction.price is not None:
                 continue
 
-            trade_date = transaction.date[:10]
+            trade_date = transaction.date[:16]
             if trade_date not in packs:
                 packs[trade_date] = Pack(trade_date)
 
@@ -56,11 +56,11 @@ def merge_packs(packs):
     dates = list(packs.keys())
     i = 0
     while i < len(dates) - 1:
-        date = datetime.strptime(dates[i], '%Y-%m-%d').date()
-        next_date = datetime.strptime(dates[i + 1], '%Y-%m-%d').date()
+        date = datetime.strptime(dates[i][:10], '%Y-%m-%d').date()
+        next_date = datetime.strptime(dates[i + 1][:10], '%Y-%m-%d').date()
         diff = next_date - date
 
-        if diff.days == 1:
+        if diff.days <= 1:
             print("==== MERGE PACKS ====")
             print(f"Pack 1 on {Color.GREEN}{dates[i]}{Color.ENDC}, "
                   f"pulled {Color.RED}{len(packs[dates[i]].in_transactions)}{Color.ENDC} moments:")
@@ -83,8 +83,9 @@ def merge_packs(packs):
                     print("==== SKIPPED ====\n")
                 elif response.lower() == 'yes' or response == '':
                     processed = True
-                    packs[dates[i]].merge(packs[dates[i + 1]])
-                    dates.remove(dates[i + 1])
+                    packs[dates[i + 1]].merge(packs[dates[i]])
+                    dates.remove(dates[i])
+                    i -= 1
                     print("==== MERGED ====\n")
                 else:
                     print("==== RETRY ====\n")
@@ -121,4 +122,3 @@ def resolve_packs(packs):
         print("==== PACK RESOLVED ====\n")
 
         pack.assign_price_to_transactions()
-
